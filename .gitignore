@@ -8,3 +8,7 @@ data/
 *.mp3
 *.wav
 bot.diff
+*.zip
+*.bak
+*.current
+bot_original.py
