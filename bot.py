@@ -277,7 +277,7 @@ def voice_menu():
 def voice_pick_keyboard():
     kb = []
     for key, label in TTS_VOICES.items():
-        kb.append([InlineKeyboardButton(text=label, callback_data=fset_voice:{key}")])
+        kb.append([InlineKeyboardButton(text=label, callback_data=f"set_voice:{key}")])
     kb.append([InlineKeyboardButton(text="⬅️ Back", callback_data="voice_tools")])
     return InlineKeyboardMarkup(inline_keyboard=kb)
 
@@ -293,6 +293,8 @@ def mini_app_reply_keyboard():
 # ─────────────────────────────────────────────
 async def ask_ollama(model_id, text):
     payload = {"model": model_id, "messages": [{"role": "user", "content": text}], "stream": False}
+    print("MODEL SENT =", model_id, flush=True)
+    print(payload, flush=True)
     print(f"OpenRouter Request => {model_id} :: {text}", flush=True)
     async with aiohttp.ClientSession() as s:
         async with s.post("https://ol.gravityzoneshop.top/api/chat", json=payload,
@@ -303,6 +305,8 @@ async def ask_ollama(model_id, text):
 async def ask_openrouter(model_id, text):
     print("### OPENROUTER BOT.PY ###", flush=True)
     payload = {"model": model_id, "messages": [{"role": "user", "content": text}]}
+    print("MODEL SENT =", model_id, flush=True)
+    print(payload, flush=True)
     print(f"OpenRouter Request => {model_id} :: {text}", flush=True)
     async with aiohttp.ClientSession() as s:
         async with s.post(
@@ -641,7 +645,7 @@ async def voice_tts_info(cb: CallbackQuery):
     await cb.answer("🔊 حالا متن خود را ارسال کنید", show_alert=True)
     await cb.answer()
 
-@dp.callback_query(F.data.startswith(set_voice:"))
+@dp.callback_query(F.data.startswith("set_voice:"))
 async def set_voice_cb(cb: CallbackQuery):
     voice = cb.data.split(":")[1]
     if voice not in TTS_VOICES:
