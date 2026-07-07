@@ -3,8 +3,6 @@ import json
 import os
 import tempfile
 import aiohttp
-from services.user_service import get_user_by_id, get_or_create_user, update_user as update_user_db
-from services.chat_service import chat_ai
 import aiofiles
 from aiogram import Bot, Dispatcher, F
 from aiogram.filters import Command
@@ -54,7 +52,7 @@ MODELS = {
     ),
 
     "phi_local": (
-        "phi3.5:latest",
+        "phi4:latest",
         "🌌 Phi-4",
         "ollama",
         "free",
@@ -89,7 +87,7 @@ MODELS = {
         "free",
     ),
 }
-DEFAULT_MODEL = "phi_local"
+DEFAULT_MODEL = "qwen3_local"
 PREMIUM_STARS_COST = 10
 # ─────────────────────────────────────────────
 # Whisper model (lazy load, once)
@@ -144,14 +142,12 @@ async def speech_to_text(file_path: str) -> str:
 # TTS — OpenAI
 # ─────────────────────────────────────────────
 TTS_VOICES = {
-    "orion":  "👨 Orion",
-    "atlas":  "👨 Atlas",
-    "nova":   "👩 Nova",
-    "luna":   "👩 Luna",
-    "iris":   "👩 Iris",
-    "aurora": "👩 Aurora",
+    "nova":    "Nova  — زنانه، ملایم",
+    "alloy":   "Alloy — خنثی، واضح",
+    "echo":    "Echo  — مردانه، گرم",
+    "shimmer": "Shimmer — زنانه، شاد",
 }
-DEFAULT_VOICE = "orion"
+DEFAULT_VOICE = "nova"
 
 async def text_to_speech(text: str, voice: str = DEFAULT_VOICE) -> str:
     """Convert text to MP3 using Edge-TTS."""
@@ -159,12 +155,10 @@ async def text_to_speech(text: str, voice: str = DEFAULT_VOICE) -> str:
     import tempfile
 
     voice_map = {
-        "orion": "fa-IR-FaridNeural",
-        "atlas": "en-US-GuyNeural",
         "nova": "en-US-AriaNeural",
-        "luna": "en-US-JennyNeural",
-        "iris": "en-GB-SoniaNeural",
-        "aurora": "en-US-AvaMultilingualNeural",
+        "alloy": "en-US-JennyNeural",
+        "echo": "fa-IR-FaridNeural",
+        "shimmer": "en-GB-SoniaNeural",
     }
 
     tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".mp3")
@@ -175,30 +169,33 @@ async def text_to_speech(text: str, voice: str = DEFAULT_VOICE) -> str:
         voice=voice_map.get(voice, "en-US-AriaNeural")
     )
 
-def get_user(uid: str):
-    user = get_user_by_id(int(uid))
-    if user is None:
+    await communicate.save(tmp.name)
+    return tmp.name
+
+# ─────────────────────────────────────────────
+# Data helpers
+# ─────────────────────────────────────────────
+def load_users():
+    os.makedirs("data", exist_ok=True)
+    if not os.path.exists(USERS_FILE):
         return {}
-    return {
-        "provider": user.provider,
-        "model": user.model,
-        "language": user.language,
-        "credits": user.credits,
-        "enabled": user.enabled,
-        "tts_voice": getattr(user, "tts_voice", "af_sarah")
-    }
+    with open(USERS_FILE, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+def save_users(users):
+    os.makedirs("data", exist_ok=True)
+    with open(USERS_FILE, "w", encoding="utf-8") as f:
+        json.dump(users, f, indent=2, ensure_ascii=False)
+
+def get_user(uid: str) -> dict:
+    return load_users().get(uid, {})
 
 def update_user(uid: str, **kwargs):
-    user = get_user_by_id(int(uid))
-    if user is None:
-        return
+    users = load_users()
+    users.setdefault(uid, {}).update(kwargs)
+    save_users(users)
 
-    for k, v in kwargs.items():
-        if hasattr(user, k):
-            setattr(user, k, v)
-
-    update_user_db(user)
-
+# ─────────────────────────────────────────────
 # Keyboards
 # ─────────────────────────────────────────────
 def main_menu():
@@ -280,7 +277,7 @@ def voice_menu():
 def voice_pick_keyboard():
     kb = []
     for key, label in TTS_VOICES.items():
-        kb.append([InlineKeyboardButton(text=label, callback_data=f"set_voice:{key}")])
+        kb.append([InlineKeyboardButton(text=label, callback_data=fset_voice:{key}")])
     kb.append([InlineKeyboardButton(text="⬅️ Back", callback_data="voice_tools")])
     return InlineKeyboardMarkup(inline_keyboard=kb)
 
@@ -294,21 +291,14 @@ def mini_app_reply_keyboard():
 # ─────────────────────────────────────────────
 # AI backends
 # ─────────────────────────────────────────────
-
-
-
 async def ask_ollama(model_id, text):
-    from services.user_service import get_user_by_id
-
-    class DummyUser:
-        pass
-
-    user = DummyUser()
-    user.provider = "node1"
-    user.model = model_id
-
-    return await chat_ai(user, text)
-
+    payload = {"model": model_id, "messages": [{"role": "user", "content": text}], "stream": False}
+    print(f"OpenRouter Request => {model_id} :: {text}", flush=True)
+    async with aiohttp.ClientSession() as s:
+        async with s.post("https://ol.gravityzoneshop.top/api/chat", json=payload,
+                          timeout=aiohttp.ClientTimeout(total=120)) as r:
+            data = await r.json()
+            return data.get("message", {}).get("content", "⚠️ مدل پاسخی برنگرداند.")
 
 async def ask_openrouter(model_id, text):
     print("### OPENROUTER BOT.PY ###", flush=True)
@@ -479,7 +469,7 @@ async def handle_voice(message: Message):
         # نشون بده چی شنیده
         await status.edit_text(
             f"📝 متن شناسایی شده:\n_{text}_\n\n⏳ {model_name} داره جواب میده...",
-            parse_chat_mode="Markdown"
+            parse_mode="Markdown"
         )
 
         print("VOICE -> ASK AI", flush=True)
@@ -518,7 +508,7 @@ async def handle_voice(message: Message):
 
         await status.edit_text(
             f"🎤 *تو گفتی:*\n_{text}_\n\n🤖 *{model_name}:*\n{answer[:3500]}",
-            parse_chat_mode="Markdown"
+            parse_mode="Markdown"
         )
 
     except asyncio.TimeoutError:
@@ -534,7 +524,7 @@ async def chat(message: Message):
     uid = str(message.from_user.id)
     user = get_user(uid)
 
-    if user.get("chat_mode") == "tts":
+    if user.get("mode") == "tts":
         voice = user.get("tts_voice", DEFAULT_VOICE)
 
         status = await message.answer(f"🔊 در حال ساختن صدا... ({voice})")
@@ -550,7 +540,7 @@ async def chat(message: Message):
 
             print("VOICE -> SENT", flush=True)
 
-            update_user(uid, chat_mode="chat")
+            update_user(uid, mode="chat")
 
             await status.delete()
             os.unlink(mp3_path)
@@ -633,7 +623,7 @@ async def voice_tools(cb: CallbackQuery):
         f"🔊 Text To Speech\n\n"
         f"🎭 صدای فعلی TTS: *{TTS_VOICES[voice]}*",
         reply_markup=voice_menu(),
-        parse_chat_mode="Markdown",
+        parse_mode="Markdown",
     )
     await cb.answer()
 
@@ -646,12 +636,12 @@ async def voice_stt_info(cb: CallbackQuery):
 
 @dp.callback_query(F.data == "voice_tts_info")
 async def voice_tts_info(cb: CallbackQuery):
-    update_user(str(cb.from_user.id), chat_mode="tts")
+    update_user(str(cb.from_user.id), mode="tts")
     print("TTS BUTTON CLICKED:", cb.from_user.id)
     await cb.answer("🔊 حالا متن خود را ارسال کنید", show_alert=True)
     await cb.answer()
 
-@dp.callback_query(F.data.startswith("set_voice:"))
+@dp.callback_query(F.data.startswith(set_voice:"))
 async def set_voice_cb(cb: CallbackQuery):
     voice = cb.data.split(":")[1]
     if voice not in TTS_VOICES:
@@ -660,7 +650,7 @@ async def set_voice_cb(cb: CallbackQuery):
     update_user(str(cb.from_user.id), tts_voice=voice)
     await cb.message.edit_text(
         f"✅ صدا به *{TTS_VOICES[voice]}* تغییر کرد!\n\nحالا متن خود را ارسال کنید",
-        reply_markup=back_menu(), parse_chat_mode="Markdown"
+        reply_markup=back_menu(), parse_mode="Markdown"
     )
     await cb.answer()
 
@@ -751,7 +741,7 @@ async def settings_menu(cb: CallbackQuery):
     await cb.message.edit_text(
         "💳 Payment\n\n🟡 EVM:\n`0x87abdd11267CE3A0479A392f2d678960CB60310b`\n\n"
         "🔴 TRON:\n`TGURS5XZv7bXLjd6t2i78BnoV3wTWrTm65`\n\n👨‍💼 @ArJeliicc",
-        reply_markup=back_menu(), parse_chat_mode="Markdown")
+        reply_markup=back_menu(), parse_mode="Markdown")
     await cb.answer()
 
 
