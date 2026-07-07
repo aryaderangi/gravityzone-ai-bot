@@ -1,0 +1,10 @@
+venv/
+__pycache__/
+*.pyc
+logs/
+*.log
+.env
+data/
+*.mp3
+*.wav
+bot.diff
