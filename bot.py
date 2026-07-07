@@ -32,7 +32,7 @@ MODELS = {
     # ───── Local (Ollama) ─────
     "qwen3_local": (
         "qwen3:8b",
-        "🧠 Qwen 3 8B",
+        "⚡ Qwen AI",
         "ollama",
         "free",
     ),
@@ -45,15 +45,22 @@ MODELS = {
     ),
 
     "deepseek_local": (
-        "deepseek-r1:7b",
+        "deepseek-r1:8b",
         "🧠 DeepSeek R1",
         "ollama",
         "free",
     ),
 
     "phi_local": (
-        "phi4:latest",
-        "🌌 Phi-4",
+        "phi3.5:latest",
+        "⚡PHi Lite",
+        "ollama",
+        "free",
+    ),
+
+    "dorna": (
+        "partai/dorna-llama3:8b-instruct-q4_0",
+        " 👽Gravity Aizone",
         "ollama",
         "free",
     ),
@@ -797,7 +804,7 @@ async def guide_ai(cb: CallbackQuery):
         "🤖 Gemma 3\nگفتگو و تولید محتوا\n\n"
         "👽 Qwen Coder\nبرنامه نویسی و توسعه ربات\n\n"
         "🧠 DeepSeek R1\nتحلیل و استدلال پیشرفته\n\n"
-        "🌌 Phi-4\nسبک و سریع برای کارهای روزمره\n\n"
+        "⚡PHi Lite\nسبک و سریع برای کارهای روزمره\n\n"
         "🪐 GPT-4o Mini\nمدل ابری سریع\n\n"
         "🦙 Nemotron\nمدل قدرتمند ابری برای تحلیل\n\n"
         "🇬🇧 English\n\n"
