@@ -65,7 +65,7 @@ MODELS = {
     ),
 }
 
-DEFAULT_MODEL = "gpt5"
+DEFAULT_MODEL = "dorna"
 PREMIUM_STARS_COST = 10
 # ─────────────────────────────────────────────
 # Whisper model (lazy load, once)
@@ -240,6 +240,7 @@ def ai_keyboard(current_model: str):
 
 def voice_menu():
     return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="🎤 ویس → متن (STT)",  callback_data="voice_stt_info")],
         [InlineKeyboardButton(text="🔊 متن → ویس (TTS)",  callback_data="voice_tts_info")],
         [InlineKeyboardButton(text="🎭 تغییر صدای TTS",   callback_data="voice_pick")],
         [InlineKeyboardButton(text="⬅️ Back",              callback_data="main_menu")],
@@ -346,6 +347,8 @@ async def dispatch_action(message: Message, action: str):
             "🛒 JelicCray Shop\n\n• 🤖 AI  • 🖥️ VPS  • 📢 Ads  • 🎵 Music\n\n"
             "👨‍💼 @ArJeliicc | 📱 https://t.me/JeliccRay",
             reply_markup=back_menu())
+    elif action == "voice_tools":
+        await voice_tools(message)
 
     elif action == "profile":
         user = get_user(str(message.from_user.id))
@@ -472,14 +475,7 @@ async def handle_voice(message: Message):
             return
 
         uid = str(message.from_user.id)
-        user = get_user(uid)
-
-        if user.get("mode") == "stt":
-            update_user(uid, mode="chat")
-            await status.edit_text(f"📝 متن شناسایی شده:\n\n{text}")
-            return
-
-        model_key = user.get("model", DEFAULT_MODEL)
+        model_key = get_user(uid).get("model", DEFAULT_MODEL)
         model_id, model_name, source, tier = MODELS.get(model_key, MODELS[DEFAULT_MODEL])
 
         # نشون بده چی شنیده
@@ -649,24 +645,18 @@ async def voice_tools(cb: CallbackQuery):
     )
     await cb.answer()
 
-    update_user(str(cb.from_user.id), mode="stt")
-    await cb.answer("🎤 حالا فقط یک ویس بفرست؛ فقط متن برمی‌گردونم.", show_alert=True)
+@dp.callback_query(F.data == "voice_stt_info")
+async def voice_stt_info(cb: CallbackQuery):
+    await cb.answer(
+        "🎤 فقط یه ویس برام بفرست — خودم رونویسی می‌کنم!",
+        show_alert=True
+    )
 
 @dp.callback_query(F.data == "voice_tts_info")
 async def voice_tts_info(cb: CallbackQuery):
     update_user(str(cb.from_user.id), mode="tts")
-    await cb.answer("🔊 حالا متن خود را ارسال کن.", show_alert=True)
-
-
-@dp.callback_query(F.data == "voice_pick")
-async def voice_pick(cb: CallbackQuery):
-    uid = str(cb.from_user.id)
-    voice = get_user(uid).get("tts_voice", DEFAULT_VOICE)
-
-    await cb.message.edit_text(
-        f"🎭 انتخاب صدا\n\nصدای فعلی: {TTS_VOICES[voice]}",
-        reply_markup=voice_pick_keyboard()
-    )
+    print("TTS BUTTON CLICKED:", cb.from_user.id)
+    await cb.answer("🔊 حالا متن خود را ارسال کنید", show_alert=True)
     await cb.answer()
 
 @dp.callback_query(F.data.startswith("set_voice:"))
