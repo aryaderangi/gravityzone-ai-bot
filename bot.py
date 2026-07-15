@@ -30,12 +30,11 @@ from aiogram.types import (
 from dotenv import load_dotenv
 from dotenv import load_dotenv
 
-from services.news.service import NewsService
 from services.gateway_client import ask as gateway_ask
 
 load_dotenv()
 
-news = NewsService()
+
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 OPENROUTER_KEY = os.getenv("OPENROUTER_API_KEY")
@@ -824,53 +823,6 @@ async def guide_roadmap(cb: CallbackQuery):
     await cb.answer()
 
 
-@dp.callback_query(F.data == "news")
-async def news_menu(cb: CallbackQuery):
-    text = await news.ai()
-    await cb.message.edit_text(
-        text,
-        parse_mode="HTML",
-        disable_web_page_preview=True,
-        reply_markup=back_menu(),
-    )
-    await cb.answer()
-
-
-@dp.callback_query(F.data == "news_center")
-async def news_center(cb: CallbackQuery):
-    kb = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="🤖 AI News", callback_data="news_ai")],
-        [InlineKeyboardButton(text="💰 Crypto News", callback_data="news_crypto")],
-        [InlineKeyboardButton(text="📈 Market", callback_data="news_market")],
-        [InlineKeyboardButton(text="🪂 Airdrops", callback_data="news_airdrop")],
-        [InlineKeyboardButton(text="⬅️ Back", callback_data="main_menu")],
-    ])
-    await cb.message.edit_text("📰 <b>GravityZone News Center</b>", parse_mode="HTML", reply_markup=kb)
-    await cb.answer()
-
-
-@dp.callback_query(F.data == "news_ai")
-async def news_ai(cb: CallbackQuery):
-    await cb.message.edit_text(await news.ai(), parse_mode="HTML", disable_web_page_preview=True, reply_markup=back_menu())
-    await cb.answer()
-
-
-@dp.callback_query(F.data == "news_crypto")
-async def news_crypto(cb: CallbackQuery):
-    await cb.message.edit_text(await news.crypto(), parse_mode="HTML", disable_web_page_preview=True, reply_markup=back_menu())
-    await cb.answer()
-
-
-@dp.callback_query(F.data == "news_market")
-async def news_market(cb: CallbackQuery):
-    await cb.message.edit_text(await news.market(), parse_mode="HTML", disable_web_page_preview=True, reply_markup=back_menu())
-    await cb.answer()
-
-
-@dp.callback_query(F.data == "news_airdrop")
-async def news_airdrop(cb: CallbackQuery):
-    await cb.message.edit_text(await news.airdrops(), parse_mode="HTML", disable_web_page_preview=True, reply_markup=back_menu())
-    await cb.answer()
 
 
 @dp.callback_query(F.data == "guide_news")
