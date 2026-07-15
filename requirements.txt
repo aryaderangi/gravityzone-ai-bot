@@ -1,0 +1,27 @@
+# ── GravityZone bot + Gravity Gateway (Enterprise v3.0) ──
+
+# Telegram bot (aiogram 3.x)
+aiogram>=3.4.0
+
+# Gravity Gateway
+fastapi>=0.110.0
+uvicorn[standard]>=0.27.0
+httpx[http2]>=0.27.0
+pydantic>=2.6.0
+
+# Enterprise hardening
+h2>=4.1.0           # HTTP/2 support for httpx
+psutil>=5.9.0       # RAM-aware auto router (Task #7)
+
+# Voice / Whisper / TTS
+openai-whisper
+edge-tts
+openai>=1.12.0
+
+# Config
+python-dotenv>=1.0.0
+aiofiles>=23.2.0
+
+# Testing
+pytest>=8.0.0
+pytest-asyncio>=0.23.0

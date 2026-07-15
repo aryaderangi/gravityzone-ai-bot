@@ -12,3 +12,5 @@ bot.diff
 *.bak
 *.current
 bot_original.py
+uploads/
+logs/

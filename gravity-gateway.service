@@ -1,0 +1,23 @@
+[Unit]
+Description=Gravity Gateway (FastAPI AI router)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=gravity
+WorkingDirectory=/opt/gravityzone
+EnvironmentFile=/opt/gravityzone/.env
+# Python venv with fastapi / uvicorn / httpx installed
+ExecStart=/opt/gravityzone/.venv/bin/uvicorn gateway.app:app --host 127.0.0.1 --port 8000
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+# Hardening
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
