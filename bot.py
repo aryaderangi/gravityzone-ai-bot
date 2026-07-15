@@ -28,16 +28,9 @@ from aiogram.types import (
     FSInputFile,
 )
 from dotenv import load_dotenv
-<<<<<<< HEAD
-
-load_dotenv()
-BOT_TOKEN       = os.getenv("BOT_TOKEN")
-OPENROUTER_KEY  = os.getenv("OPENROUTER_API_KEY")
-OPENAI_KEY      = os.getenv("OPENAI_API_KEY")
-=======
+from dotenv import load_dotenv
 
 from services.news.service import NewsService
-# ── Gravity Gateway: single async entry point for ALL AI calls ──
 from services.gateway_client import ask as gateway_ask
 
 load_dotenv()
@@ -45,7 +38,8 @@ load_dotenv()
 news = NewsService()
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
->>>>>>> a262cd4 (feat(gateway): add Gravity Gateway with provider routing and health monitoring)
+OPENROUTER_KEY = os.getenv("OPENROUTER_API_KEY")
+OPENAI_KEY = os.getenv("OPENAI_API_KEY")
 
 bot = Bot(token=BOT_TOKEN)
 dp  = Dispatcher()
@@ -64,16 +58,16 @@ MINI_APP_URL  = "https://mini.gravityzoneshop.top"
 MODELS = {
     # ── New AI Hub (Gravity Gateway) ──
     "gravity-ai": ("gravity-ai", "👽 Gravity AI",  "node1",      "free"),
-    "phi":        ("phi",        "⚡ Phi",         "node1",      "free"),
-    "qwen":       ("qwen",       "🌸 Qwen3",       "node2",      "free"),
-    "gemma":      ("gemma",      "💎 Gemma3",      "node2",      "free"),
-    "deepseek":   ("deepseek",   "🐋 DeepSeek R1", "node2",      "free"),
-    "gpt":        ("gpt",        "🤖 GPT",         "openrouter", "paid"),
-    "auto":       ("auto",       "🌐 Auto Router", "auto",       "free"),
+    "phi":        ("phi",        "🥏 Phi",         "node1",      "free"),
+    "qwen":       ("qwen",       "🥏 Qwen",       "node2",      "free"),
+    "gemma":      ("gemma",      "💠 Gemma",      "node2",      "free"),
+    "deepseek":   ("deepseek",   "🧬 DeepSeek", "node2",      "free"),
+    "gpt":        ("gpt",        "🧠 GPT-4.1 mini",         "openrouter", "paid"),
+    "auto":       ("auto",       "⚡ Auto Router", "auto",       "free"),
     # ── Backward-compatible aliases (old callback_data still resolve) ──
-    "phi_local":  ("phi",        "⚡ Phi",         "node1",      "free"),
+    "phi_local":  ("phi",        "🥏 Phi",         "node1",      "free"),
     "dorna":      ("gravity-ai", "👽 Gravity AI",  "node1",      "free"),
-    "gpt5":       ("gpt",        "🤖 GPT",         "openrouter", "paid"),
+    "gpt5":       ("gpt",        "🧠 GPT-4.1 mini",         "openrouter", "paid"),
     "nemotron":   ("nemotron",   "🦙 Nemotron",    "openrouter", "free"),
 }
 DEFAULT_MODEL = "auto"
@@ -218,7 +212,7 @@ def back_menu():
 
 def ai_keyboard(current_model: str):
     """New AI Hub — every model is routed through Gravity Gateway."""
-    order = ["gravity-ai", "auto", "gpt", "deepseek", "gemma", "qwen", "phi"]
+    order = ["auto","gpt","phi","qwen","deepseek","gemma"]
     buttons = []
     for key in order:
         _alias, name, _source, _tier = MODELS[key]
@@ -761,13 +755,13 @@ async def guide_ai(cb: CallbackQuery):
     await cb.message.edit_text(
         "🧠 AI Models — Gravity Gateway\n\n"
         "🇮🇷 فارسی\n\n"
-        "👽 Gravity AI — مدل محبوب GravityZone\n"
-        "⚡ Phi — سبک و سریع برای کارهای روزمره\n"
-        "🌸 Qwen3 — گفتگو و تولید محتوا\n"
-        "💎 Gemma3 — همه‌کاره و دقیق\n"
-        "🐋 DeepSeek R1 — تحلیل و استدلال پیشرفته\n"
-        "🤖 GPT — مدل ابری قدرتمند\n"
-        "🌐 Auto Router — انتخاب هوشمند + failover خودکار به GPT\n\n"
+        "🧠 AI Hub\n\n🇮🇷 یک مدل را انتخاب کنید.\n\n🇬🇧 Choose a model.\n"
+        "🥏 Phi — سبک و سریع برای کارهای روزمره\n"
+        "🥏 Qwen — گفتگو و تولید محتوا\n"
+        "💠 Gemma — همه‌کاره و دقیق\n"
+        "🧬 DeepSeek — تحلیل و استدلال پیشرفته\n"
+        "🧠 GPT-4.1 mini — مدل ابری قدرتمند\n"
+        "⚡ Auto Router — انتخاب هوشمند + failover خودکار به GPT\n\n"
         "🇬🇧 English\n\n"
         "Chat • Coding • Reasoning • Content Creation",
         reply_markup=back_menu(),
@@ -830,8 +824,6 @@ async def guide_roadmap(cb: CallbackQuery):
     await cb.answer()
 
 
-<<<<<<< HEAD
-=======
 @dp.callback_query(F.data == "news")
 async def news_menu(cb: CallbackQuery):
     text = await news.ai()
@@ -881,7 +873,6 @@ async def news_airdrop(cb: CallbackQuery):
     await cb.answer()
 
 
->>>>>>> a262cd4 (feat(gateway): add Gravity Gateway with provider routing and health monitoring)
 @dp.callback_query(F.data == "guide_news")
 async def guide_news(cb: CallbackQuery):
     await cb.message.edit_text(
