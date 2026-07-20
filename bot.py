@@ -211,7 +211,7 @@ def back_menu():
 
 def ai_keyboard(current_model: str):
     """New AI Hub — every model is routed through Gravity Gateway."""
-    order = ["auto","gpt","phi","qwen","deepseek","gemma"]
+    order = ["auto"]
     buttons = []
     for key in order:
         _alias, name, _source, _tier = MODELS[key]

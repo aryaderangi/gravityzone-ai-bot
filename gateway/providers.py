@@ -25,7 +25,7 @@ log = logging.getLogger("gravity.providers")
 # Per-provider timeouts (seconds)
 # ─────────────────────────────────────────────
 LOCAL_TIMEOUT = float(os.getenv("LOCAL_TIMEOUT", "12"))
-REMOTE_TIMEOUT = float(os.getenv("REMOTE_TIMEOUT", "18"))
+REMOTE_TIMEOUT = float(os.getenv("REMOTE_TIMEOUT", "60"))
 GPT_TIMEOUT = float(os.getenv("GPT_TIMEOUT", "30"))
 HEALTH_TIMEOUT = float(os.getenv("GATEWAY_HEALTH_TIMEOUT", "10"))
 HEALTH_CACHE_TTL = float(os.getenv("HEALTH_CACHE_TTL", "30"))
@@ -329,8 +329,8 @@ PROVIDERS = {
 # Models to warm up on startup (requirement #7)
 WARMUP_MODELS = [
     ("node2", "gemma3:12b"),
-    ("node2", "qwen3:8b"),
-    ("node2", "deepseek-r1:8b"),
+    ("node2", "gemma3:12b"),
+    ("node2", "phi4-mini:latest"),
 ]
 
 

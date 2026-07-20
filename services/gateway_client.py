@@ -74,9 +74,10 @@ async def ask(model: str, prompt: str, user: str | None = None) -> str:
     try:
         client = _get_client()
         resp = await client.post(f"{GATEWAY_URL}/chat", json=payload)
-    except httpx.HTTPError as exc:
-        log.error("Gateway unreachable: %s", exc)
-        return "❌ Gateway در دسترس نیست.\nلطفاً چند لحظه بعد تلاش کنید."
+    except Exception as exc:
+        log.exception("Gateway unreachable (%s): %r", type(exc).__name__, exc)
+        return "❌  Gateway در دسترس نیست.\nلطفاً چند لحظه بعد تلاش کنید."
+
 
     if resp.status_code == 429:
         # Rate limited — return the friendly message (Task #5)

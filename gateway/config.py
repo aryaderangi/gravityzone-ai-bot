@@ -87,14 +87,14 @@ ADMIN_TOKEN = os.getenv("GATEWAY_ADMIN_TOKEN", "")
 # ─────────────────────────────────────────────
 ROUTING = {
     # Node1 (ol.gravityzoneshop.top)
-    "gravity-ai":  ("node1", "partai/dorna-llama3:8b-instruct-q4_0"),
-    "gravityai":   ("node1", "partai/dorna-llama3:8b-instruct-q4_0"),
-    "dorna":       ("node1", "partai/dorna-llama3:8b-instruct-q4_0"),
-    "phi":         ("node1", "phi3.5:latest"),
+    "gravity-ai":  ("node1", "llama3.2:3b"),
+    "gravityai":   ("node1", "llama3.2:3b"),
+    "dorna":       ("node1", "llama3.2:3b"),
+    "phi":         ("node2", "phi4-mini:latest"),
     "phi_local":   ("node1", "phi3.5:latest"),
     # Node2 (oll.gravityzoneshop.top)
-    "qwen":        ("node2", "qwen3:8b"),
-    "qwen3":       ("node2", "qwen3:8b"),
+    "qwen":        ("node2", "phi4-mini:latest"),
+    "qwen3":       ("node2", "phi4-mini:latest"),
     "gemma":       ("node2", "gemma3:12b"),
     "gemma3":      ("node2", "gemma3:12b"),
     "deepseek":    ("node2", "deepseek-r1:8b"),
@@ -108,17 +108,17 @@ ROUTING = {
 # ─────────────────────────────────────────────
 # Failover building blocks  (alias, provider_name, model_id)
 # ─────────────────────────────────────────────
-NODE1_FALLBACK = ("gravity-ai", "node1", "partai/dorna-llama3:8b-instruct-q4_0")
-NODE2_FALLBACK = ("qwen", "node2", "qwen3:8b")
+NODE1_FALLBACK = ("gravity-ai", "node1", "llama3.2:3b")
+NODE2_FALLBACK = ("gemma", "node2", "gemma3:12b")
 GPT_STEP = ("gpt", "openrouter", "openai/gpt-4.1-mini")
 
 # Default Auto Router chain (overridden at runtime by RAM-aware priority).
-AUTO_CHAIN = [NODE1_FALLBACK, NODE2_FALLBACK, GPT_STEP]
+AUTO_CHAIN = [("gemma","node2","gemma3:12b"),("phi","node2","phi4-mini:latest"),GPT_STEP]
 
 # RAM-aware auto-router preferences (Task #7)
 # (preferred_model, provider, model_id) per RAM tier
-RAM_LOW_MODEL = ("phi", "node1", "phi3.5:latest")          # < 4 GB
-RAM_DEFAULT_MODEL = ("qwen", "node2", "qwen3:8b")          # 4-10 GB
-RAM_HIGH_MODEL = ("gemma", "node2", "gemma3:12b")          # > 10 GB
+RAM_LOW_MODEL = ("phi", "node2", "phi4-mini:latest")
+RAM_DEFAULT_MODEL = ("gemma", "node2", "gemma3:12b")
+RAM_HIGH_MODEL = ("gemma", "node2", "gemma3:12b")
 
 AUTO_ALIAS = "auto"
